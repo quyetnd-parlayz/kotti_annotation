@@ -3,18 +3,18 @@ kotti_annotation
 
 This is an extension to Kotti that add zope.annotation support to your kotti resource.
 
+|build status|_
+
 What it does
 ============
 
-- (SQLA) Create annotations table to store node annotations
+- (SQLA) Create ``annotations`` table to store node annotations
 
-- Add Annotation adapter
+- Add zope.annotation ``IAnnotations`` adapter
 
-- Add new base class for contenttype: FlexContent that can store foreign attributes in annotation storage
+- Add new base class for contenttype: ``FlexContent`` that can store foreign attributes in annotation storage
 
-- (TBD) Intergrate with kotti_es for indexing support
-
-|build status|_
+- (TBD) Intergrate with ``kotti_es`` for indexing support
 
 `Find out more about Kotti`_
 
