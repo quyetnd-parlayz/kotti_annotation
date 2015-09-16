@@ -1,7 +1,18 @@
 kotti_annotation
 ****************
 
-This is an extension to Kotti that allows to add foo to your site.
+This is an extension to Kotti that add zope.annotation support to your kotti resource.
+
+What it does
+============
+
+- (SQLA) Create annotations table to store node annotations
+
+- Add Annotation adapter
+
+- Add new base class for contenttype: FlexContent that can store foreign attributes in annotation storage
+
+- (TBD) Intergrate with kotti_es for indexing support
 
 |build status|_
 
