@@ -23,6 +23,7 @@ htmlcov/
 bin/
 lib/
 lib64/
+include/
 nosetests.xml
 parts/
 pip-delete-this-directory.txt
