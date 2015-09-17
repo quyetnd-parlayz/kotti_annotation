@@ -21,18 +21,10 @@ class TestAnnotation:
         # Add IFlexContent interfaces to root
         directlyProvides(root, IFlexContent)
         # Adapter query
-        # adapter = config.registry.queryAdapter(root, IAnnotations)
+        adapter = config.registry.queryAdapter(root, IAnnotations)
+        assert isinstance(adapter, SQLAAnnotations)
         adapter = IAnnotations(root)
         assert isinstance(adapter, SQLAAnnotations)
-
-    def test_sqla_json(self, db_session, root):
-
-        from transaction import commit
-        from kotti.resources import Node
-        root.annotations = {'4': {4: 'four'}}
-        commit()
-        root = db_session.query(Node).filter(Node.parent_id == None).one()
-        assert root.annotations['4'] == {4: 'four'}
 
     def test_CRUD(self, db_session, root):
 
@@ -42,21 +34,52 @@ class TestAnnotation:
         root = db_session.query(Node).filter(Node.parent_id == None).one()
         adapter = SQLAAnnotations(root)
 
+        assert not adapter
+
         # Only string key is supported
         with raises(TypeError):
             adapter[1] = 'one'
+
+        # Check if data is persisted
         adapter['1'] = 'one'
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
         assert adapter['1'] == 'one'
+
         adapter['2'] = 2
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
         assert adapter['2'] == 2
-        adapter['three'] = [1, '2', 3]
-        assert adapter['three'] == [1, '2', 3]
+
+        adapter['3'] = [1, '2', 3]
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
+        assert adapter['3'] == [1, '2', 3]
+
         adapter['4'] = {4: 'four'}
-        # import pdb; pdb.set_trace()
-        assert adapter['4'] == {4: 'four'}
-        adapter['4'] = 'five'
-        assert adapter['4'] == 'five'
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
+        assert adapter['4'] == {'4': 'four'}
+        assert len(adapter) == 4
+        keys = adapter.keys()
+        keys.sort()
+        assert keys == ['1', '2', '3', '4']
+
+        # Check Mutability
+        adapter['4']['4'] = 'five'
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
+        assert adapter['4'] == {'4': 'five'}
+
         assert '1' in adapter
         del adapter['1']
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
         with raises(KeyError):
             adapter['1']

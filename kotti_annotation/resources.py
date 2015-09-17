@@ -10,6 +10,7 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
+from sqlalchemy import Text
 
 from zope.interface import implements
 from zope.annotation.interfaces import IAnnotations
@@ -17,10 +18,10 @@ from zope.annotation.interfaces import IAnnotations
 from kotti import Base
 from kotti.resources import Node
 from kotti.resources import Content
-from kotti.sqla import JsonType
 
 from kotti_annotation import _
 from kotti_annotation.interfaces import IFlexContent
+from kotti_annotation.sqla import JSONAlchemy
 
 
 
@@ -36,14 +37,14 @@ class Annotation(Base):
     name = Column(String(50), primary_key=True)
     #: Annotation value
     #: (:class:`kotti.sqla.JsonType`)
-    value = Column(JsonType)
+    value = Column(JSONAlchemy(Text))
     #: Relation that adds a ``node`` :func:`sqlalchemy.orm.backref`
     #: to :class:`~kotti_annotation.resources.Annotation` instances
     #: (:func:`sqlalchemy.orm.relationship`)
     node = relation(Node)
 
     def __repr__(self):
-        return self.value
+        return str(self.value)
         # return u"<Annotation '{0}' of '{1}': {2}>".format(
         #     self.name, self.node.__repr__(), self.value)
 

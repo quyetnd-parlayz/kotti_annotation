@@ -17,6 +17,7 @@ except ImportError:
 
 from kotti import DBSession
 from kotti.sqla import JsonType
+# from kotti.sqla import 
 
 from kotti_annotation import _
 from kotti_annotation.interfaces import IFlexContent
@@ -31,59 +32,52 @@ class SQLAAnnotations(DictMixin):
 
     def __init__(self, context):
         self.obj = context
+        self._annotations = dict([(ann.name, ann) for ann in 
+            DBSession.query(Annotation).filter_by(node_id=self.obj.id)])
 
     def __bool__(self):
-        return DBSession.query(Annotation).filter_by(
-            node_id=self.obj.id).first() is not None
+        return len(self._annotations) > 0
 
     __nonzero__ = __bool__
 
     def get(self, key, default=None):
         """See zope.annotation.interfaces.IAnnotations"""
-        anno = DBSession.query(Annotation).filter_by(
-            node_id=self.obj.id, name=key).first()
-        if anno is None:
+        if key not in self._annotations:
             return default
-        return anno.value
+        return self._annotations[key].value
 
     def __getitem__(self, key):
-        anno = DBSession.query(Annotation).filter_by(
-            node_id=self.obj.id, name=key).first()
-        if anno is None:
+        if key not in self._annotations: 
             raise KeyError(key)
-        return anno.value
+        return self._annotations[key].value
 
     def keys(self):
-        return [ anno.name for anno in DBSession.query(
-            Annotation.name).filter_by(node_id=self.obj.id).all()]
+        return self._annotations.keys()
 
     def __iter__(self):
-        return iter(DBSession.query(
-            Annotation).filter_by(node_id=self.obj.id).all())
+        return iter(self._annotations)
 
     def __len__(self):
-        return DBSession.query(
-            Annotation.name).filter_by(node_id=self.obj.id).count()
+        return len(self._annotations)
 
     def __setitem__(self, key, value):
         """See zope.annotation.interfaces.IAnnotations"""
         # import pdb; pdb.set_trace()
         if not isinstance(key, string_types):
             raise TypeError("Only string key is supported")
-        anno = DBSession.query(Annotation).filter_by(
-            node_id=self.obj.id, name=key).first()
-        if anno is None:
+        if not key in self._annotations:
             anno = Annotation(self.obj.id, key, value)
-            # import pdb; pdb.set_trace()
+            self._annotations[key] = anno
             DBSession.add(anno)
         else:
-            anno.value = value
+            self._annotations[key].value = value
 
     def __delitem__(self, key):
         """See zope.app.interfaces.annotation.IAnnotations"""
-        DBSession.query(Annotation).filter_by(
-            node_id=self.obj.id, name=key).delete()
+        if not key in self._annotations:
+            return
+        anno = self._annotations.pop(key)
+        DBSession.delete(anno)
 
     def __contains__(self, key):
-        return DBSession.query(Annotation).filter_by(
-            node_id=self.obj.id, name=key).first() is not None
+        return key in self._annotations
