@@ -17,6 +17,7 @@ version = '0.1dev'
 
 install_requires = [
     'Kotti>=1.0.0',
+    'zope.annotation>=4.4.0'
 ]
 
 
@@ -47,9 +48,6 @@ setup(
     tests_require=[],
     dependency_links=[],
     entry_points={
-        'fanstatic.libraries': [
-            'kotti_annotation = kotti_annotation.fanstatic:library',
-        ],
     },
     extras_require={},
 )

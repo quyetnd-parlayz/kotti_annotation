@@ -20,6 +20,7 @@ downloads/
 eggs/
 env/
 htmlcov/
+bin/
 lib/
 lib64/
 nosetests.xml
