@@ -25,11 +25,14 @@ class TestAnnotation:
         adapter = IAnnotations(root)
         assert isinstance(adapter, SQLAAnnotations)
 
-    def test_sqlajson(self, db_session, root):
+    def test_sqla_json(self, db_session, root):
 
-        root.annotations = {'4':{4:'four'}}
-        # root = db_session.query(Node).filter(Node.parent_id == None).one()
-        assert root.annotations['4'] == {4:'four'}
+        from transaction import commit
+        from kotti.resources import Node
+        root.annotations = {'4': {4: 'four'}}
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        assert root.annotations['4'] == {4: 'four'}
 
     def test_CRUD(self, db_session, root):
 
