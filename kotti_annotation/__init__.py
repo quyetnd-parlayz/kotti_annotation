@@ -10,7 +10,7 @@ from pyramid.i18n import TranslationStringFactory
 _ = TranslationStringFactory('kotti_annotation')
 
 
-def kotti_configure(settings):
+def kotti_configure(settings): # pragma: no cover
     """ Add a line like this to you .ini file::
 
             kotti.configurators =

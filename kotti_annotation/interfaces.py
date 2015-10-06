@@ -10,4 +10,5 @@ from kotti.interfaces import IContent
 
 
 class IFlexContent(IContent, IAnnotatable):
-    """Marker interface for FlexContent"""
+    """FlexContent have ability to set/get foreign attributes 
+       via Annotation Storage"""

@@ -21,10 +21,11 @@ class TestAnnotation:
         # Add IFlexContent interfaces to root
         directlyProvides(root, IFlexContent)
         # Adapter query
-        adapter = config.registry.queryAdapter(root, IAnnotations)
-        assert isinstance(adapter, SQLAAnnotations)
-        adapter = IAnnotations(root)
-        assert isinstance(adapter, SQLAAnnotations)
+        adapter1 = config.registry.queryAdapter(root, IAnnotations)
+        assert isinstance(adapter1, SQLAAnnotations)
+        adapter2 = IAnnotations(root)
+        assert isinstance(adapter2, SQLAAnnotations)
+        # assert adapter1 is adapter2
 
     def test_CRUD(self, db_session, root):
 
@@ -45,37 +46,56 @@ class TestAnnotation:
         commit()
         root = db_session.query(Node).filter(Node.parent_id == None).one()
         adapter = SQLAAnnotations(root)
+        assert root._annotations['1'].value == 'one'
         assert adapter['1'] == 'one'
+        assert adapter.get('1') == 'one'
+        assert adapter.get('2', None) == None
 
-        adapter['2'] = 2
+        # Test edit
+        adapter['1'] = 2
         commit()
         root = db_session.query(Node).filter(Node.parent_id == None).one()
         adapter = SQLAAnnotations(root)
-        assert adapter['2'] == 2
+        assert adapter['1'] == 2
 
-        adapter['3'] = [1, '2', 3]
+        # Complicated data structure
+        adapter['2'] = [1, '2', 3]
         commit()
         root = db_session.query(Node).filter(Node.parent_id == None).one()
         adapter = SQLAAnnotations(root)
-        assert adapter['3'] == [1, '2', 3]
+        assert adapter['2'] == [1, '2', 3]
 
-        adapter['4'] = {4: 'four'}
+        adapter['3'] = {4: 'four'}
         commit()
         root = db_session.query(Node).filter(Node.parent_id == None).one()
         adapter = SQLAAnnotations(root)
-        assert adapter['4'] == {'4': 'four'}
-        assert len(adapter) == 4
+        assert adapter['3'] == {'4': 'four'}
+
+        # Other dict function
+        assert len(adapter) == 3
         keys = adapter.keys()
         keys.sort()
-        assert keys == ['1', '2', '3', '4']
+        assert keys == ['1', '2', '3']
 
         # Check Mutability
-        adapter['4']['4'] = 'five'
+        adapter['2'][1] = ['2', 2]
+        adapter['3']['4'] = {'5': 'five'}
         commit()
         root = db_session.query(Node).filter(Node.parent_id == None).one()
         adapter = SQLAAnnotations(root)
-        assert adapter['4'] == {'4': 'five'}
+        assert adapter['2'] == [1, ['2', 2], 3]
+        assert adapter['3'] == {'4': {'5': 'five'}}
 
+        # Check nested Mutability
+        adapter['2'][1][0] = 2
+        adapter['3']['4']['5'] = 5
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
+        assert adapter['2'] == [1, [2, 2], 3]
+        assert adapter['3'] == {'4': {'5': 5}}
+
+        # Delete
         assert '1' in adapter
         del adapter['1']
         commit()
@@ -83,3 +103,14 @@ class TestAnnotation:
         adapter = SQLAAnnotations(root)
         with raises(KeyError):
             adapter['1']
+        with raises(KeyError):
+            del adapter['4']
+
+        # Check special type
+        import datetime
+        now = datetime.datetime.now()
+        adapter['1'] = now
+        commit()
+        root = db_session.query(Node).filter(Node.parent_id == None).one()
+        adapter = SQLAAnnotations(root)
+        assert adapter['1'] == now

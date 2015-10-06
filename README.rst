@@ -3,7 +3,9 @@ kotti_annotation
 
 This is an extension to Kotti that add zope.annotation support to your kotti resource.
 
-|build status|_
+|build status|_ |coverall|_
+
+
 
 What it does
 ============
@@ -23,6 +25,8 @@ Development happens at https://github.com/quyetnd-parlayz/kotti_annotation
 .. |build status| image:: https://secure.travis-ci.org/quyetnd-parlayz/kotti_annotation.png?branch=master
 .. _build status: http://travis-ci.org/quyetnd-parlayz/kotti_annotation
 .. _Find out more about Kotti: http://pypi.python.org/pypi/Kotti
+.. |coverall| image:: https://coveralls.io/repos/quyetnd-parlayz/kotti_annotation/badge.svg?branch=master&service=github 
+.. _coverall https://coveralls.io/github/quyetnd-parlayz/kotti_annotation?branch=master 
 
 Setup
 =====

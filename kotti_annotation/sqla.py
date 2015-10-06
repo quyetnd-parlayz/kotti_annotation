@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
 """
-https://gist.github.com/patricklx/5561889
-:author: patricklx
+JSON sqlalchemy type
+bytes from https://gist.github.com/patricklx/5561889
 """
 
-import json
+from pyramid.compat import json
+from kotti_annotation.json import JSONEncoder
+from kotti_annotation.json import JSONDecoder
+
 import sqlalchemy
 from sqlalchemy import String
 from sqlalchemy.ext.mutable import Mutable
+
 
 class JSONEncodedObj(sqlalchemy.types.TypeDecorator):
     """Represents an immutable structure as a json-encoded string."""
@@ -17,12 +21,12 @@ class JSONEncodedObj(sqlalchemy.types.TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         if value is not None:
-            value = json.dumps(value)
+            value = json.dumps(value, cls=JSONEncoder)
         return value
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            value = json.loads(value)
+            value = json.loads(value, object_hook=JSONDecoder())
         return value
 
 class MutationObj(Mutable):

@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""
-Created on 2015-09-16
-:author: quyetnd (quyet@parlayz.com)
-"""
-
 from sqlalchemy.orm import relation
+from sqlalchemy.orm import backref
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import ForeignKey
@@ -24,7 +21,6 @@ from kotti_annotation.interfaces import IFlexContent
 from kotti_annotation.sqla import JSONAlchemy
 
 
-
 class Annotation(Base):
     """Persistent class (SQLA) for annotation
     """
@@ -38,12 +34,14 @@ class Annotation(Base):
     #: Annotation value
     #: (:class:`kotti.sqla.JsonType`)
     value = Column(JSONAlchemy(Text))
-    #: Relation that adds a ``node`` :func:`sqlalchemy.orm.backref`
-    #: to :class:`~kotti_annotation.resources.Annotation` instances
-    #: (:func:`sqlalchemy.orm.relationship`)
-    node = relation(Node)
+    node = relation(Node, backref=backref(
+            "_annotations", 
+            collection_class=attribute_mapped_collection('name'),
+            cascade="all, delete-orphan"
+            )
+        )
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return str(self.value)
         # return u"<Annotation '{0}' of '{1}': {2}>".format(
         #     self.name, self.node.__repr__(), self.value)
@@ -53,24 +51,3 @@ class Annotation(Base):
         self.name = name
         self.value = value
 
-
-class FlexContentMixin(object):
-    """FlexContent have ability to set/get foreign attributes 
-       via Annotation Storage"""
-
-    implements(IFlexContent)
-
-    def __setattr__(self, name, value):
-        if hasattr(self, name):
-            super(FlexContent, self).__setattr__(name,value)
-        else:
-            IAnnotations(self)[name] = value
-
-    def __getattr__(self, name):
-        try:
-            return super(FlexContent, self).__getattr__(name)
-        except AttributeError:
-            anno = IAnnotations(self)
-            if not name in anno:
-                raise AttributeError
-            return anno[name]
